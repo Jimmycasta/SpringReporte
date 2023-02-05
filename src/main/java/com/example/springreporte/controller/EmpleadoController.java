@@ -2,7 +2,9 @@ package com.example.springreporte.controller;
 
 import com.example.springreporte.entities.Empleado;
 import com.example.springreporte.paging.PageRender;
+import com.example.springreporte.reports.EmpleadoExporterPDF;
 import com.example.springreporte.service.IEmpleadoService;
+import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
@@ -18,6 +20,11 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.support.SessionStatus;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
+import java.io.IOException;
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
+import java.util.Date;
+import java.util.List;
 import java.util.Map;
 
 @Controller
@@ -46,7 +53,7 @@ public class EmpleadoController {
             return "redirect:/listar";
         }
         modelo.put("empleado", empleado);
-        modelo.put("titulo", "Detalle del empleado" + empleado.getNombre());
+        modelo.put("titulo", "Detalle del empleado " + empleado.getNombre());
         return "ver";
     }
 
@@ -98,6 +105,27 @@ public class EmpleadoController {
             flash.addAttribute("success", "Cliente eliminado");
         }
         return "redirect:/listar";
+
+    }
+
+    @GetMapping("/exportarPDF")
+    public void exportarListaPdf(HttpServletResponse response) throws IOException {
+        response.setContentType("application/pdf");
+
+        DateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd_HH:mm:ss");
+        String fechaActual = dateFormat.format(new Date());
+
+        String cabecera = "Content-Disposition";
+        String valor = "attachment; filename=Empleados_" + fechaActual + ".pdf";
+
+        response.setHeader(cabecera, valor);
+
+        List<Empleado> empleados = service.findAll();
+
+        EmpleadoExporterPDF exporter = new EmpleadoExporterPDF(empleados);
+        exporter.exportarPdf(response);
+
+
 
     }
 
