@@ -2,6 +2,7 @@ package com.example.springreporte.controller;
 
 import com.example.springreporte.entities.Empleado;
 import com.example.springreporte.paging.PageRender;
+import com.example.springreporte.reports.EmpleadoExporterExcel;
 import com.example.springreporte.reports.EmpleadoExporterPDF;
 import com.example.springreporte.service.IEmpleadoService;
 import jakarta.servlet.http.HttpServletResponse;
@@ -124,6 +125,27 @@ public class EmpleadoController {
 
         EmpleadoExporterPDF exporter = new EmpleadoExporterPDF(empleados);
         exporter.exportarPdf(response);
+
+
+
+    }
+
+    @GetMapping("/exportarExcel")
+    public void exportarListaExcel(HttpServletResponse response) throws IOException {
+        response.setContentType("application/octet-stream");
+
+        DateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd_HH:mm:ss");
+        String fechaActual = dateFormat.format(new Date());
+
+        String cabecera = "Content-Disposition";
+        String valor = "attachment; filename=Empleados_" + fechaActual + ".xlsx";
+
+        response.setHeader(cabecera, valor);
+
+        List<Empleado> empleados = service.findAll();
+
+        EmpleadoExporterExcel exporter = new EmpleadoExporterExcel(empleados);
+        exporter.exportarExcel(response);
 
 
 
